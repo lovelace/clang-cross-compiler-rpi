@@ -2,19 +2,21 @@
 
 set -e
 
-SYSROOT_DOWNLOAD_PATH="https://storage.googleapis.com/axon-artifacts/sysroot-stretch-9.1-20180104-2.tar.gz"
 BINUTILS_DOWNLOAD_PATH="https://ftp.gnu.org/gnu/binutils/binutils-2.28.tar.bz2"
-usage="$(basename "$0") [-h] -s <directory_of_sdk> -- This script generates the SDK directory for Raspberry Pi that can be used to compile C/C++ programs using clang.
+usage="$(basename "$0") [-h] -r <sysroot tar file path> -s <directory_of_sdk> -- This script generates the SDK directory for Raspberry Pi that can be used to compile C/C++ programs using clang.
 
 where:
     -h  show this help text
+    -r  Local path to the sysroot tar.gz file from a Raspbian box
     -s  The directory where the SDK should be generated"
 
 sdk_output_dir=""
-while getopts ':hs:' option; do
+while getopts ':hr:s:' option; do
   case "$option" in
     h) echo "$usage"
        exit
+       ;;
+    r) sysroot_path=$OPTARG
        ;;
     s) sdk_output_dir=$OPTARG
        ;;
@@ -82,7 +84,8 @@ rm -rf ${tmpdir}
 
 # Sysroot from RPI
 pushd ${sdk_sysroot_output_dir}
-curl ${SYSROOT_DOWNLOAD_PATH} | tar -xz
+echo "Expanding ${sysroot_path} into sysroot directory ${sdk_sysroot_output_dir}"
+tar -xzf ${sysroot_path}
 popd
 
 #TODO(zasgar): Figure out why this is needed? Probably something to do with LD compile options.
